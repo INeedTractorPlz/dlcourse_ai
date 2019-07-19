@@ -1,5 +1,6 @@
 import numpy as np
-
+from math import sqrt
+from collections import Counter
 
 class KNN:
     """
@@ -54,9 +55,8 @@ class KNN:
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
             for i_train in range(num_train):
-                # TODO: Fill dists[i_test][i_train]
-                pass
-
+                dists[i_test][i_train] = sum(np.abs(self.train_X[i_train] - X[i_test]))
+        return dists
     def compute_distances_one_loop(self, X):
         '''
         Computes L1 distance from every sample of X to every training sample
@@ -73,9 +73,9 @@ class KNN:
         num_test = X.shape[0]
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
-            # TODO: Fill the whole row of dists[i_test]
-            # without additional loops or list comprehensions
-            pass
+            dists[i_test] = sum((np.abs(self.train_X - X[i_test])).T)
+        #print(dists)
+        return dists
 
     def compute_distances_no_loops(self, X):
         '''
@@ -94,7 +94,8 @@ class KNN:
         # Using float32 to to save memory - the default is float64
         dists = np.zeros((num_test, num_train), np.float32)
         # TODO: Implement computing all distances with no loops!
-        pass
+        dists = np.apply_along_axis(lambda x: sum((np.abs(self.train_X - x)).T), 1, X)
+        return dists
 
     def predict_labels_binary(self, dists):
         '''
@@ -113,7 +114,8 @@ class KNN:
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
-            pass
+            #print(self.train_y[dists[i].argsort()[-self.k:]], dists[i].argsort()[-self.k:])
+            pred[i] = Counter(self.train_y[dists[i].argsort()[:self.k]]).most_common()[0][0]
         return pred
 
     def predict_labels_multiclass(self, dists):
@@ -129,10 +131,9 @@ class KNN:
            for every test sample
         '''
         num_test = dists.shape[0]
-        num_test = dists.shape[0]
         pred = np.zeros(num_test, np.int)
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
-            pass
+            pred[i] = Counter(self.train_y[dists[i].argsort()[:self.k]]).most_common()[0][0]
         return pred

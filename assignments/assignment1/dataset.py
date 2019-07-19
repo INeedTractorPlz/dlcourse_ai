@@ -3,7 +3,7 @@ import scipy.io as io
 import os
 
 
-def load_data_mat(filename, max_samples, seed=42):
+def load_data_mat(filename, max_samples):
     '''
     Loads numpy arrays from .mat file
 
@@ -19,7 +19,6 @@ def load_data_mat(filename, max_samples, seed=42):
     # Fix up class 0 to be 0
     y[y == 10] = 0
 
-    np.random.seed(seed)
     samples = np.random.choice(np.arange(X.shape[0]),
                                max_samples,
                                replace=False)

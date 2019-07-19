@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def check_gradient(f, x, delta=1e-5, tol=1e-4):
-    """
+def check_gradient(f, x, delta=1e-5, tol = 1e-4):
+    '''
     Checks the implementation of analytical gradient by comparing
     it to numerical gradient using two-point formula
 
@@ -14,27 +14,35 @@ def check_gradient(f, x, delta=1e-5, tol=1e-4):
 
     Return:
       bool indicating whether gradients match or not
-    """
+    '''
+    
     assert isinstance(x, np.ndarray)
     assert x.dtype == np.float
-
+    
+    orig_x = x.copy()
     fx, analytic_grad = f(x)
-    analytic_grad = analytic_grad.copy()
+    assert np.all(np.isclose(orig_x, x, tol)), "Functions shouldn't modify input variables"
 
     assert analytic_grad.shape == x.shape
-
+    
+    # We will go through every dimension of x and compute numeric
+    # derivative for it
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
+    
     while not it.finished:
         ix = it.multi_index
         analytic_grad_at_ix = analytic_grad[ix]
-        numeric_grad_at_ix = 0
-
-        # TODO Copy from previous assignment
-        raise Exception("Not implemented!")
-
+        
+        orig_x[ix] += delta; f_1 = f(orig_x)[0];
+        
+        orig_x[ix] -= 2*delta; f_2 = f(orig_x)[0];
+        orig_x[ix] += delta;
+        
+        numeric_grad_at_ix = (f_1 - f_2)/(2*delta);
+        
         if not np.isclose(numeric_grad_at_ix, analytic_grad_at_ix, tol):
-            print("Gradients are different at %s. Analytic: %2.5f, Numeric: %2.5f" % (
-                  ix, analytic_grad_at_ix, numeric_grad_at_ix))
+            print("Gradients are different at %s. Analytic: %2.5f, Numeric: %2.5f" % (ix,\
+                analytic_grad_at_ix, numeric_grad_at_ix))
             return False
 
         it.iternext()
@@ -56,14 +64,24 @@ def check_layer_gradient(layer, x, delta=1e-5, tol=1e-4):
     Returns:
       bool indicating whether gradients match or not
     """
-    output = layer.forward(x)
+    output = layer.forward(x);
+    #print("output:", output);
+    
     output_weight = np.random.randn(*output.shape)
 
     def helper_func(x):
-        output = layer.forward(x)
-        loss = np.sum(output * output_weight)
-        d_out = np.ones_like(output) * output_weight
-        grad = layer.backward(d_out)
+        output = layer.forward(x);
+        #print("output:", output);
+    
+        loss = np.sum(output * output_weight);
+        #print("loss = ", loss);
+    
+        d_out = np.ones_like(output) * output_weight;
+        #print("d_out:", d_out);
+    
+        grad = layer.backward(d_out);
+        #print("grad:", grad);
+    
         return loss, grad
 
     return check_gradient(helper_func, x, delta, tol)
